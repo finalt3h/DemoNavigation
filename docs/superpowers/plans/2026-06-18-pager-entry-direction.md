@@ -4,7 +4,7 @@
 
 **Goal:** Add a persistent `Trái / Phải` selector that controls which edge the incoming pager page enters from.
 
-**Architecture:** Introduce a small `PagerEntryDirection` model and `SharedPreferences` repository, then pass the selected direction into the pure pager transform function. The selected option defines the entry edge for a left-to-right gesture, while the transform reverses that edge for the opposite gesture direction.
+**Architecture:** Introduce a small `PagerEntryDirection` model and `SharedPreferences` repository, then pass the selected direction into the pure pager transform function. The selected edge determines whether a gesture is pushing a page onto the stack or popping the top page off; pop is the visual inverse of push.
 
 **Tech Stack:** Kotlin, Jetpack Compose, Compose Foundation Pager, Android SharedPreferences, JUnit 4, Compose UI tests.
 

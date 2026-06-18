@@ -8,9 +8,9 @@ Allow the user to choose which side a new pager page enters from. The selected d
 
 - Show a two-option selector labeled `Trái` and `Phải` above the pager.
 - `Trái` is selected by default when no saved preference exists.
-- Selecting `Trái` makes the incoming page move from the left edge when swiping left to right.
-- Selecting `Phải` makes the incoming page move from the right edge when swiping left to right.
-- Swiping in the opposite direction automatically reverses the incoming edge.
+- With `Trái`, moving to the previous page sinks the current page while the previous page enters from the left.
+- Reversing that transition slides the top page back toward the left edge while the underneath page fades in, rises, and scales back to full size.
+- `Phải` mirrors the same push/pop behavior on the right edge.
 - Apply a changed selection immediately to subsequent pager transitions.
 - Preserve the existing sink, scale, fade, shadow, and stacking behavior of the outgoing page.
 - Preserve the existing multi-page fast-fling behavior.
@@ -30,7 +30,7 @@ Use Android `SharedPreferences` because this feature stores one small local valu
 - A small preference helper reads and writes the enum.
 - `StackedHorizontalPagerScreen` loads the saved value once when composed.
 - Selecting an option updates Compose state and writes the new value locally.
-- The selected direction controls the sign of the pager's incoming movement while keeping gesture progress and outgoing-page transforms intact.
+- The selected direction defines the stack edge. Moving deeper into that edge uses a push transition; moving back uses the exact visual inverse as a pop transition.
 
 ## Error Handling
 
@@ -41,7 +41,7 @@ Use Android `SharedPreferences` because this feature stores one small local valu
 ## Testing
 
 - Unit-test preference-value parsing and the default fallback.
-- Unit-test transforms for incoming pages from both the left and right.
+- Unit-test push and pop transforms for both left and right stack edges.
 - Retain the fast-fling regression test.
 - Compose UI test verifies both selector labels and the default selected direction.
 - Run all debug unit tests and build the debug APK.

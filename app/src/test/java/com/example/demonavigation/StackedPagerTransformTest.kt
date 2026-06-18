@@ -12,7 +12,8 @@ class StackedPagerTransformTest {
             transitionDirection = 1,
             currentPage = 0,
             currentPageOffsetFraction = 0.4f,
-            pageWidth = 1_000f
+            pageWidth = 1_000f,
+            entryDirection = PagerEntryDirection.RIGHT
         )
 
         assertEquals(400f, transform.translationX, 0.001f)
@@ -22,7 +23,7 @@ class StackedPagerTransformTest {
     }
 
     @Test
-    fun leftOptionEntersFromRightWhenSwipingRightToLeft() {
+    fun incomingPageKeepsDefaultPagerHorizontalMovement() {
         val transform = computeStackedPagerTransform(
             page = 1,
             transitionBasePage = 0,
@@ -30,7 +31,7 @@ class StackedPagerTransformTest {
             currentPage = 0,
             currentPageOffsetFraction = 0.4f,
             pageWidth = 1_000f,
-            entryDirection = PagerEntryDirection.LEFT
+            entryDirection = PagerEntryDirection.RIGHT
         )
 
         assertEquals(0f, transform.translationX, 0.001f)
@@ -40,23 +41,51 @@ class StackedPagerTransformTest {
     }
 
     @Test
-    fun rightOptionEntersFromLeftWhenSwipingRightToLeft() {
-        val transform = computeStackedPagerTransform(
+    fun leftOptionPopsTopPageOutAndRevealsPageUnderneath() {
+        val topPage = computeStackedPagerTransform(
+            page = 0,
+            transitionBasePage = 0,
+            transitionDirection = 1,
+            currentPage = 0,
+            currentPageOffsetFraction = 0.4f,
+            pageWidth = 1_000f,
+            entryDirection = PagerEntryDirection.LEFT
+        )
+        val underneathPage = computeStackedPagerTransform(
             page = 1,
             transitionBasePage = 0,
             transitionDirection = 1,
             currentPage = 0,
             currentPageOffsetFraction = 0.4f,
             pageWidth = 1_000f,
-            entryDirection = PagerEntryDirection.RIGHT
+            entryDirection = PagerEntryDirection.LEFT
         )
 
-        assertEquals(-1_200f, transform.translationX, 0.001f)
+        assertEquals(0f, topPage.translationX, 0.001f)
+        assertEquals(1f, topPage.scale, 0.001f)
+        assertEquals(1f, topPage.alpha, 0.001f)
+        assertEquals(0f, topPage.translationY, 0.001f)
+        assertEquals(1f, topPage.zIndex, 0.001f)
+
+        assertEquals(-600f, underneathPage.translationX, 0.001f)
+        assertEquals(0.916f, underneathPage.scale, 0.001f)
+        assertEquals(0.508f, underneathPage.alpha, 0.001f)
+        assertEquals(57.6f, underneathPage.translationY, 0.001f)
+        assertEquals(0.4f, underneathPage.zIndex, 0.001f)
     }
 
     @Test
-    fun leftOptionEntersFromLeftWhenSwipingLeftToRight() {
-        val transform = computeStackedPagerTransform(
+    fun leftOptionPushStillSinksCurrentPageAndBringsPreviousPageFromLeft() {
+        val sinkingPage = computeStackedPagerTransform(
+            page = 1,
+            transitionBasePage = 1,
+            transitionDirection = -1,
+            currentPage = 1,
+            currentPageOffsetFraction = -0.4f,
+            pageWidth = 1_000f,
+            entryDirection = PagerEntryDirection.LEFT
+        )
+        val enteringPage = computeStackedPagerTransform(
             page = 0,
             transitionBasePage = 1,
             transitionDirection = -1,
@@ -66,12 +95,29 @@ class StackedPagerTransformTest {
             entryDirection = PagerEntryDirection.LEFT
         )
 
-        assertEquals(0f, transform.translationX, 0.001f)
+        assertEquals(-400f, sinkingPage.translationX, 0.001f)
+        assertEquals(0.944f, sinkingPage.scale, 0.001f)
+        assertEquals(0.672f, sinkingPage.alpha, 0.001f)
+        assertEquals(38.4f, sinkingPage.translationY, 0.001f)
+
+        assertEquals(0f, enteringPage.translationX, 0.001f)
+        assertEquals(1f, enteringPage.scale, 0.001f)
+        assertEquals(1f, enteringPage.alpha, 0.001f)
+        assertEquals(1f, enteringPage.zIndex, 0.001f)
     }
 
     @Test
-    fun rightOptionEntersFromRightWhenSwipingLeftToRight() {
-        val transform = computeStackedPagerTransform(
+    fun rightOptionPopsTopPageOutAndRevealsPageUnderneath() {
+        val topPage = computeStackedPagerTransform(
+            page = 1,
+            transitionBasePage = 1,
+            transitionDirection = -1,
+            currentPage = 1,
+            currentPageOffsetFraction = -0.4f,
+            pageWidth = 1_000f,
+            entryDirection = PagerEntryDirection.RIGHT
+        )
+        val underneathPage = computeStackedPagerTransform(
             page = 0,
             transitionBasePage = 1,
             transitionDirection = -1,
@@ -81,7 +127,14 @@ class StackedPagerTransformTest {
             entryDirection = PagerEntryDirection.RIGHT
         )
 
-        assertEquals(1_200f, transform.translationX, 0.001f)
+        assertEquals(0f, topPage.translationX, 0.001f)
+        assertEquals(1f, topPage.scale, 0.001f)
+        assertEquals(1f, topPage.alpha, 0.001f)
+
+        assertEquals(600f, underneathPage.translationX, 0.001f)
+        assertEquals(0.916f, underneathPage.scale, 0.001f)
+        assertEquals(0.508f, underneathPage.alpha, 0.001f)
+        assertEquals(57.6f, underneathPage.translationY, 0.001f)
     }
 
     @Test
@@ -92,7 +145,8 @@ class StackedPagerTransformTest {
             transitionDirection = 1,
             currentPage = 1,
             currentPageOffsetFraction = -0.4f,
-            pageWidth = 1_000f
+            pageWidth = 1_000f,
+            entryDirection = PagerEntryDirection.RIGHT
         )
         val incomingTransform = computeStackedPagerTransform(
             page = 1,
@@ -101,7 +155,7 @@ class StackedPagerTransformTest {
             currentPage = 1,
             currentPageOffsetFraction = -0.4f,
             pageWidth = 1_000f,
-            entryDirection = PagerEntryDirection.LEFT
+            entryDirection = PagerEntryDirection.RIGHT
         )
 
         assertEquals(600f, outgoingTransform.translationX, 0.001f)
@@ -121,7 +175,8 @@ class StackedPagerTransformTest {
             transitionDirection = 1,
             currentPage = 1,
             currentPageOffsetFraction = 0f,
-            pageWidth = 1_000f
+            pageWidth = 1_000f,
+            entryDirection = PagerEntryDirection.RIGHT
         )
         val incomingTransform = computeStackedPagerTransform(
             page = 1,
@@ -130,7 +185,7 @@ class StackedPagerTransformTest {
             currentPage = 1,
             currentPageOffsetFraction = 0f,
             pageWidth = 1_000f,
-            entryDirection = PagerEntryDirection.LEFT
+            entryDirection = PagerEntryDirection.RIGHT
         )
 
         assertEquals(1_000f, outgoingTransform.translationX, 0.001f)
@@ -150,7 +205,8 @@ class StackedPagerTransformTest {
             transitionDirection = 1,
             currentPage = 1,
             currentPageOffsetFraction = 0.35f,
-            pageWidth = 1_000f
+            pageWidth = 1_000f,
+            entryDirection = PagerEntryDirection.RIGHT
         )
 
         assertEquals(350f, transform.translationX, 0.001f)

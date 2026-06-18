@@ -312,17 +312,18 @@ internal fun computeStackedPagerTransform(
     val incomingPage = segmentBasePage + direction
     val isOutgoingPage = direction != 0 && page == segmentBasePage
     val isIncomingPage = direction != 0 && page == incomingPage
-    val sinkProgress = if (isOutgoingPage) {
-        abs(travelFromSegmentBase).coerceIn(0f, 1f)
-    } else {
-        0f
+    val transitionProgress = abs(travelFromSegmentBase).coerceIn(0f, 1f)
+    val pushDirection = if (entryDirection == PagerEntryDirection.LEFT) -1 else 1
+    val isPushTransition = direction == pushDirection
+    val sinkProgress = when {
+        isPushTransition && isOutgoingPage -> transitionProgress
+        !isPushTransition && isIncomingPage -> 1f - transitionProgress
+        else -> 0f
     }
-    val incomingProgress = abs(travelFromSegmentBase).coerceIn(0f, 1f)
-    val incomingTranslationX = if (isIncomingPage) {
+    val pushIncomingTranslationX = if (isPushTransition && isIncomingPage) {
         val defaultPosition = (page - scrollPosition) * pageWidth
-        val selectedSign = if (entryDirection == PagerEntryDirection.LEFT) -1f else 1f
-        val entrySign = selectedSign * -direction
-        val desiredPosition = entrySign * (1f - incomingProgress) * pageWidth
+        val entrySign = if (entryDirection == PagerEntryDirection.LEFT) -1f else 1f
+        val desiredPosition = entrySign * (1f - transitionProgress) * pageWidth
         desiredPosition - defaultPosition
     } else {
         0f
@@ -330,15 +331,23 @@ internal fun computeStackedPagerTransform(
 
     return StackedPagerTransform(
         translationX = when {
-            isOutgoingPage -> (scrollPosition - page) * pageWidth
-            isIncomingPage -> incomingTranslationX
+            isPushTransition && isOutgoingPage -> (scrollPosition - page) * pageWidth
+            isPushTransition && isIncomingPage -> pushIncomingTranslationX
+            !isPushTransition && isOutgoingPage -> 0f
+            !isPushTransition && isIncomingPage -> (scrollPosition - page) * pageWidth
             else -> 0f
         },
         translationY = lerp(0f, 96f, sinkProgress),
         scale = lerp(1f, 0.86f, sinkProgress),
         alpha = lerp(1f, 0.18f, sinkProgress),
         shadowElevation = lerp(24f, 4f, sinkProgress),
-        zIndex = if (isIncomingPage) 1f else 1f - sinkProgress
+        zIndex = when {
+            isPushTransition && isIncomingPage -> 1f
+            isPushTransition && isOutgoingPage -> 1f - transitionProgress
+            !isPushTransition && isOutgoingPage -> 1f
+            !isPushTransition && isIncomingPage -> transitionProgress
+            else -> 0f
+        }
     )
 }
 
