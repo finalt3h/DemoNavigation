@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.demonavigation.ui.theme.DemoNavigationTheme
 import kotlin.math.abs
+import kotlin.math.ceil
 
 private data class PagerPage(
     val title: String,
@@ -240,11 +241,16 @@ internal fun computeStackedPagerTransform(
         travelFromBasePage > 0f -> 1
         else -> 0
     }
-    val incomingPage = transitionBasePage + direction
-    val isOutgoingPage = direction != 0 && page == transitionBasePage
+    val completedSegments = (ceil(abs(travelFromBasePage)) - 1f)
+        .coerceAtLeast(0f)
+        .toInt()
+    val segmentBasePage = transitionBasePage + direction * completedSegments
+    val travelFromSegmentBase = scrollPosition - segmentBasePage
+    val incomingPage = segmentBasePage + direction
+    val isOutgoingPage = direction != 0 && page == segmentBasePage
     val isIncomingPage = direction != 0 && page == incomingPage
     val sinkProgress = if (isOutgoingPage) {
-        abs(travelFromBasePage).coerceIn(0f, 1f)
+        abs(travelFromSegmentBase).coerceIn(0f, 1f)
     } else {
         0f
     }

@@ -93,4 +93,21 @@ class StackedPagerTransformTest {
         assertEquals(1f, incomingTransform.scale, 0.001f)
         assertEquals(1f, incomingTransform.alpha, 0.001f)
     }
+
+    @Test
+    fun fastFlingSinksEachPageAsItBecomesTheOutgoingPage() {
+        val transform = computeStackedPagerTransform(
+            page = 1,
+            transitionBasePage = 0,
+            transitionDirection = 1,
+            currentPage = 1,
+            currentPageOffsetFraction = 0.35f,
+            pageWidth = 1_000f
+        )
+
+        assertEquals(350f, transform.translationX, 0.001f)
+        assertEquals(0.951f, transform.scale, 0.001f)
+        assertEquals(0.713f, transform.alpha, 0.001f)
+        assertEquals(33.6f, transform.translationY, 0.001f)
+    }
 }
