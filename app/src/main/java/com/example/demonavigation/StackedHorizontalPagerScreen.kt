@@ -320,7 +320,8 @@ internal fun computeStackedPagerTransform(
     val incomingProgress = abs(travelFromSegmentBase).coerceIn(0f, 1f)
     val incomingTranslationX = if (isIncomingPage) {
         val defaultPosition = (page - scrollPosition) * pageWidth
-        val entrySign = if (entryDirection == PagerEntryDirection.LEFT) -1f else 1f
+        val selectedSign = if (entryDirection == PagerEntryDirection.LEFT) -1f else 1f
+        val entrySign = selectedSign * -direction
         val desiredPosition = entrySign * (1f - incomingProgress) * pageWidth
         desiredPosition - defaultPosition
     } else {

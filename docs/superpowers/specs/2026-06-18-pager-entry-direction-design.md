@@ -8,8 +8,9 @@ Allow the user to choose which side a new pager page enters from. The selected d
 
 - Show a two-option selector labeled `Trái` and `Phải` above the pager.
 - `Trái` is selected by default when no saved preference exists.
-- Selecting `Trái` makes the incoming page move from the left edge toward the right.
-- Selecting `Phải` makes the incoming page move from the right edge toward the left.
+- Selecting `Trái` makes the incoming page move from the left edge when swiping left to right.
+- Selecting `Phải` makes the incoming page move from the right edge when swiping left to right.
+- Swiping in the opposite direction automatically reverses the incoming edge.
 - Apply a changed selection immediately to subsequent pager transitions.
 - Preserve the existing sink, scale, fade, shadow, and stacking behavior of the outgoing page.
 - Preserve the existing multi-page fast-fling behavior.

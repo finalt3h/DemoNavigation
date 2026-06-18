@@ -4,7 +4,7 @@
 
 **Goal:** Add a persistent `Trái / Phải` selector that controls which edge the incoming pager page enters from.
 
-**Architecture:** Introduce a small `PagerEntryDirection` model and `SharedPreferences` repository, then pass the selected direction into the pure pager transform function. Keep gesture direction responsible for page order while entry direction controls only the incoming page's visual horizontal translation.
+**Architecture:** Introduce a small `PagerEntryDirection` model and `SharedPreferences` repository, then pass the selected direction into the pure pager transform function. The selected option defines the entry edge for a left-to-right gesture, while the transform reverses that edge for the opposite gesture direction.
 
 **Tech Stack:** Kotlin, Jetpack Compose, Compose Foundation Pager, Android SharedPreferences, JUnit 4, Compose UI tests.
 
