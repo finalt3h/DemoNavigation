@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">DemoNavigation</string>
+    <string name="first_fragment_title">Users</string>
+    <string name="second_fragment_title">Second Fragment</string>
+    <string name="details_fragment_title">Details</string>
+    <string name="third_fragment_title">Third Fragment</string>
+    <string name="camera_fragment_title">Camera</string>
+    <string name="go_to_second">Go To Second Fragment</string>
+    <string name="go_to_third">Go To Third Fragment</string>
+    <string name="back_to_first">Back To First Fragment</string>
+    <string name="back">Back</string>
+    <string name="user_detail_message">Selected user: %1$s</string>
+</resources>
