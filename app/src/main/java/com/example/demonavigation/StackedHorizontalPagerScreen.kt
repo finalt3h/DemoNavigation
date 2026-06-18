@@ -14,15 +14,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -32,6 +33,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -78,6 +81,13 @@ private val stackedPagerPages = listOf(
 @Composable
 fun StackedHorizontalPagerScreen(modifier: Modifier = Modifier) {
     val pagerState = rememberPagerState(pageCount = { stackedPagerPages.size })
+    val context = LocalContext.current.applicationContext
+    val directionPreferences = remember(context) {
+        PagerEntryDirectionPreferences(context)
+    }
+    var entryDirection by remember(directionPreferences) {
+        mutableStateOf(directionPreferences.read())
+    }
     var transitionBasePage by remember { mutableIntStateOf(pagerState.settledPage) }
     var transitionDirection by remember { mutableIntStateOf(0) }
 
@@ -114,7 +124,17 @@ fun StackedHorizontalPagerScreen(modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            PagerEntryDirectionSelector(
+                selectedDirection = entryDirection,
+                onDirectionSelected = { direction ->
+                    entryDirection = direction
+                    directionPreferences.write(direction)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
 
             HorizontalPager(
                 state = pagerState,
@@ -135,7 +155,8 @@ fun StackedHorizontalPagerScreen(modifier: Modifier = Modifier) {
                                 transitionDirection = transitionDirection,
                                 currentPage = pagerState.currentPage,
                                 currentPageOffsetFraction = pagerState.currentPageOffsetFraction,
-                                pageWidth = 0f
+                                pageWidth = 0f,
+                                entryDirection = entryDirection
                             ).zIndex
                         )
                         .graphicsLayer {
@@ -145,7 +166,8 @@ fun StackedHorizontalPagerScreen(modifier: Modifier = Modifier) {
                                 transitionDirection = transitionDirection,
                                 currentPage = pagerState.currentPage,
                                 currentPageOffsetFraction = pagerState.currentPageOffsetFraction,
-                                pageWidth = size.width
+                                pageWidth = size.width,
+                                entryDirection = entryDirection
                             )
                             translationX = transform.translationX
                             translationY = transform.translationY
@@ -170,6 +192,46 @@ fun StackedHorizontalPagerScreen(modifier: Modifier = Modifier) {
                             .background(if (selected) Color(0xFF263238) else Color(0x33263238))
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PagerEntryDirectionSelector(
+    selectedDirection: PagerEntryDirection,
+    onDirectionSelected: (PagerEntryDirection) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFFE7E9EE))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        PagerEntryDirection.entries.forEach { direction ->
+            val selected = direction == selectedDirection
+            val label = if (direction == PagerEntryDirection.LEFT) "Trái" else "Phải"
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(if (selected) Color.White else Color.Transparent)
+                    .selectable(
+                        selected = selected,
+                        role = Role.RadioButton,
+                        onClick = { onDirectionSelected(direction) }
+                    )
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = label,
+                    color = if (selected) Color(0xFF263238) else Color(0xFF747980),
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
+                )
             }
         }
     }
@@ -230,7 +292,8 @@ internal fun computeStackedPagerTransform(
     transitionDirection: Int,
     currentPage: Int,
     currentPageOffsetFraction: Float,
-    pageWidth: Float
+    pageWidth: Float,
+    entryDirection: PagerEntryDirection = PagerEntryDirection.LEFT
 ): StackedPagerTransform {
     val scrollPosition = currentPage + currentPageOffsetFraction
     val travelFromBasePage = scrollPosition - transitionBasePage
@@ -254,12 +317,21 @@ internal fun computeStackedPagerTransform(
     } else {
         0f
     }
+    val incomingProgress = abs(travelFromSegmentBase).coerceIn(0f, 1f)
+    val incomingTranslationX = if (isIncomingPage) {
+        val defaultPosition = (page - scrollPosition) * pageWidth
+        val entrySign = if (entryDirection == PagerEntryDirection.LEFT) -1f else 1f
+        val desiredPosition = entrySign * (1f - incomingProgress) * pageWidth
+        desiredPosition - defaultPosition
+    } else {
+        0f
+    }
 
     return StackedPagerTransform(
-        translationX = if (isOutgoingPage) {
-            (scrollPosition - page) * pageWidth
-        } else {
-            0f
+        translationX = when {
+            isOutgoingPage -> (scrollPosition - page) * pageWidth
+            isIncomingPage -> incomingTranslationX
+            else -> 0f
         },
         translationY = lerp(0f, 96f, sinkProgress),
         scale = lerp(1f, 0.86f, sinkProgress),
