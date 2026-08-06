@@ -2,7 +2,30 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/firstFragment">
+    app:startDestination="@id/mainStartFragment">
+
+    <fragment
+        android:id="@+id/mainStartFragment"
+        android:name="com.example.demonavigation.MainStartFragment"
+        android:label="Màn hình chính">
+        <action
+            android:id="@+id/action_mainStartFragment_to_viewPageHahaFragment"
+            app:destination="@id/viewPageHahaFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/viewPageHahaFragment"
+        android:name="com.example.demonavigation.ViewPageHahaFragment"
+        android:label="ViewPager Haha">
+        <action
+            android:id="@+id/action_viewPageHahaFragment_to_tradeFragment"
+            app:destination="@id/tradeFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/tradeFragment"
+        android:name="com.example.demonavigation.TradeFragment"
+        android:label="Trade" />
 
     <fragment
         android:id="@+id/firstFragment"
