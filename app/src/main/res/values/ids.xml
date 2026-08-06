@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="sectorContainerA" type="id" />
+    <item name="sectorContainerB" type="id" />
+    <item name="sectorContainerC" type="id" />
+    <item name="sectorContainerD" type="id" />
+</resources>

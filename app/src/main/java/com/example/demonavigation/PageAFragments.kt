@@ -16,21 +16,58 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commitNow
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
-class Fragment1A : BasePageAFragment("Fragment1A", Color.rgb(239, 83, 80))
-class Fragment2A : BasePageAFragment("Fragment2A", Color.rgb(66, 165, 245))
-class Fragment3A : BasePageAFragment("Fragment3A", Color.rgb(102, 187, 106))
-class Fragment4A : BasePageAFragment("Fragment4A", Color.rgb(255, 167, 38))
-class Fragment5A : BasePageAFragment("Fragment5A", Color.rgb(171, 71, 188))
+class Fragment1A : BasePageAFragment("Fragment1A", Color.rgb(239, 83, 80)) {
+    override val pageViewModel: Fragment1AViewModel by viewModels()
+    override fun createSectorFragments(): List<Fragment> = listOf(
+        FragmentSector1A(), FragmentSector1B(), FragmentSector1C(), FragmentSector1D()
+    )
+}
+
+class Fragment2A : BasePageAFragment("Fragment2A", Color.rgb(66, 165, 245)) {
+    override val pageViewModel: Fragment2AViewModel by viewModels()
+    override fun createSectorFragments(): List<Fragment> = listOf(
+        FragmentSector2A(), FragmentSector2B(), FragmentSector2C(), FragmentSector2D()
+    )
+}
+
+class Fragment3A : BasePageAFragment("Fragment3A", Color.rgb(102, 187, 106)) {
+    override val pageViewModel: Fragment3AViewModel by viewModels()
+    override fun createSectorFragments(): List<Fragment> = listOf(
+        FragmentSector3A(), FragmentSector3B(), FragmentSector3C(), FragmentSector3D()
+    )
+}
+
+class Fragment4A : BasePageAFragment("Fragment4A", Color.rgb(255, 167, 38)) {
+    override val pageViewModel: Fragment4AViewModel by viewModels()
+    override fun createSectorFragments(): List<Fragment> = listOf(
+        FragmentSector4A(), FragmentSector4B(), FragmentSector4C(), FragmentSector4D()
+    )
+}
+
+class Fragment5A : BasePageAFragment("Fragment5A", Color.rgb(171, 71, 188)) {
+    override val pageViewModel: Fragment5AViewModel by viewModels()
+    override fun createSectorFragments(): List<Fragment> = listOf(
+        FragmentSector5A(), FragmentSector5B(), FragmentSector5C(), FragmentSector5D()
+    )
+}
 
 abstract class BasePageAFragment(
     private val pageName: String,
     private val pageColor: Int
 ) : Fragment() {
+    protected abstract val pageViewModel: PageAViewModel
+    protected abstract fun createSectorFragments(): List<Fragment>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Truy cập lần đầu để ViewModel tạo và giữ chuỗi nặng của riêng page này.
+        pageViewModel.heavyTextData.length
         ScreenLogger.log(this, "onCreate")
     }
 
@@ -40,6 +77,9 @@ abstract class BasePageAFragment(
         savedInstanceState: Bundle?
     ): View {
         val context = requireContext()
+//        runBlocking {
+//            delay(1000)
+//        }
         return ScrollView(context).apply {
             setBackgroundColor(pageColor)
             isFillViewport = true
@@ -56,6 +96,15 @@ abstract class BasePageAFragment(
                     setPadding(0, dp(12), 0, dp(20))
                 }, matchWrap())
 
+                addView(TextView(context).apply {
+                    text = "${pageViewModel.javaClass.simpleName}: " +
+                        "${pageViewModel.heavyTextData.length} ký tự (~1 MB)"
+                    textSize = 14f
+                    setTextColor(Color.WHITE)
+                    gravity = Gravity.CENTER
+                    setPadding(0, 0, 0, dp(10))
+                }, matchWrap())
+
                 addView(createGrid10x10(), matchWrap(dp(10)))
 
                 addView(Button(context).apply {
@@ -67,6 +116,23 @@ abstract class BasePageAFragment(
                         )
                     }
                 }, matchWrap(dp(18)))
+
+                addView(TextView(context).apply {
+                    text = "4 child fragments của $pageName"
+                    textSize = 16f
+                    setTextColor(Color.WHITE)
+                    setTypeface(typeface, Typeface.BOLD)
+                    setPadding(0, dp(18), 0, dp(8))
+                }, matchWrap())
+
+                SECTOR_CONTAINER_IDS.forEach { containerId ->
+                    addView(FrameLayout(context).apply {
+                        id = containerId
+                    }, LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(56)
+                    ).apply { topMargin = dp(6) })
+                }
             }, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -77,6 +143,24 @@ abstract class BasePageAFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         ScreenLogger.log(this, "onViewCreated")
+        addSectorFragmentsIfNeeded()
+    }
+
+    private fun addSectorFragmentsIfNeeded() {
+        val sectorTagPrefix = "${javaClass.simpleName}_sector_"
+        if (childFragmentManager.findFragmentByTag("${sectorTagPrefix}0") != null) return
+
+        val sectors = createSectorFragments()
+        childFragmentManager.commitNow {
+            setReorderingAllowed(true)
+            sectors.forEachIndexed { index, sectorFragment ->
+                add(
+                    SECTOR_CONTAINER_IDS[index],
+                    sectorFragment,
+                    "$sectorTagPrefix$index"
+                )
+            }
+        }
     }
 
     private fun createGrid10x10(): View {
@@ -126,6 +210,7 @@ abstract class BasePageAFragment(
                 }, LinearLayout.LayoutParams(dp(42), dp(42)))
             }, frameMatchMatch())
         }
+
     }
 
     private fun roundedBackground(color: Int, radiusDp: Float) = GradientDrawable().apply {
@@ -158,5 +243,11 @@ abstract class BasePageAFragment(
 
     private companion object {
         const val GRID_SIZE = 10
+        val SECTOR_CONTAINER_IDS = intArrayOf(
+            R.id.sectorContainerA,
+            R.id.sectorContainerB,
+            R.id.sectorContainerC,
+            R.id.sectorContainerD
+        )
     }
 }
