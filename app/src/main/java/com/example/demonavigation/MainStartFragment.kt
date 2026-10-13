@@ -28,6 +28,11 @@ class MainStartFragment : Fragment() {
                 R.id.action_mainStartFragment_to_viewPageHahaFragment
             )
         }
+        view.findViewById<Button>(R.id.btnOpenConcatAdapter).setOnClickListener {
+            findNavController().navigate(
+                R.id.action_mainStartFragment_to_concatAdapterDemoFragment
+            )
+        }
     }
 
     override fun onStart() {

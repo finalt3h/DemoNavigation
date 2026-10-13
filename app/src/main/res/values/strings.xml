@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">DemoNavigation</string>
+    <string name="avatar_content_description">Avatar</string>
+    <string name="photo_content_description">Photo</string>
+    <string name="main_button">bốp</string>
     <string name="first_fragment_title">Users</string>
     <string name="second_fragment_title">Second Fragment</string>
     <string name="details_fragment_title">Details</string>

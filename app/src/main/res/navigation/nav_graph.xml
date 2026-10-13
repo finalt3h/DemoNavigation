@@ -11,7 +11,15 @@
         <action
             android:id="@+id/action_mainStartFragment_to_viewPageHahaFragment"
             app:destination="@id/viewPageHahaFragment" />
+        <action
+            android:id="@+id/action_mainStartFragment_to_concatAdapterDemoFragment"
+            app:destination="@id/concatAdapterDemoFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/concatAdapterDemoFragment"
+        android:name="com.example.demonavigation.ConcatAdapterDemoFragment"
+        android:label="ConcatAdapter Demo" />
 
     <fragment
         android:id="@+id/viewPageHahaFragment"
